@@ -1,0 +1,7 @@
+syntax = "proto2";
+
+package telemetry;
+
+message Packet {
+    repeated int32 dataset = 1;
+}

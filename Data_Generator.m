@@ -5,9 +5,9 @@ clc;
 % Whether to plot one line or three
 multi_line = 1;
 % Whether the data should have any sort of waveforms in it or not
-noisy = 0;
+noisy = 1;
 % Whether to write the data or not
-write_data = 1;
+write_data = 0;
 % SETUP:
 % Number of iterations
 number_steps = 500;

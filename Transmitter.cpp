@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 #include <stdio.h>
+#include "packet.pb.h"
 
 
 int main() {
@@ -23,30 +24,39 @@ int main() {
         int counter = 1;
 
 
-        // Read each line from the file and store it in the
-        // 'line' variable.
+        // For each line in the CSV file
         while (getline(file, line)) {
-            std::cout << counter << ':' << std::endl;
+            // Print index
+            // std::cout << counter << ':' << std::endl;
            
-            // Declare our char* for the string
-            // Find length of the line we need
-            int len = line.length();
-            char parsableLine[len+1];
-            // Convert string to char*
-            strcpy(parsableLine, line.c_str());
-            // Returns first token
-            char *token = strtok(parsableLine, ",");
+            // // CREATE OUR VALUE HOLDER
+            // // Declare our char* for the string
+            // // Find length of the line we need
+            // int len = line.length();
+            // char parsableLine[len+1];
+            // // Convert string to char*
+            // strcpy(parsableLine, line.c_str());
+
+            // // CREATE OUR PROTOBUF
+            // telemetry::Packet currentPacket;
+            
+            // // COLLECT OUR DATA
+            // // Returns first token
+            // char *token = strtok(parsableLine, ",");
+            // currentPacket.add_dataset(token);
        
-            // Keep printing tokens while one of the
-            // delimiters present in str[].
-            while (token != NULL)
-            {
-                std::cout << token << std::endl;
-                token = strtok(NULL, ",");
-            }
+            // // Returns next tokens
+            // while (token != NULL)
+            // {
+            //     // std::cout << token << std::endl;
+            //     currentPacket.add_dataset(token);
+            //     token = strtok(NULL, ",");
+            // }
 
+            // // Print what we have in the protobuf
+            // std::cout << currentPacket << std::endl;
 
-            counter++;
+            // counter++;
         }
 
 

@@ -1,7 +1,7 @@
-syntax = "proto2";
+syntax = "proto3";
 
 package telemetry;
 
 message Packet {
-    repeated int32 dataset = 1;
+    repeated float dataset = 1;
 }

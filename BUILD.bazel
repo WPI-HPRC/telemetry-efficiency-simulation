@@ -1,0 +1,22 @@
+load("@protobuf//bazel:proto_library.bzl", "proto_library")
+
+proto_library(
+    name = "packet_proto",
+    srcs = ["packet.proto"],
+    deps = [],
+)
+
+cc_proto_library(
+    name = "packet_cc_proto",
+    deps = [":packet_proto"],
+)
+
+cc_binary(
+  name = "Transmitter",
+  deps = [
+    ":packet_cc_proto",
+    "@protobuf//:protobuf",
+    "@abseil-cpp//absl/strings"
+  ],
+  srcs = ["Transmitter.cpp"],
+)

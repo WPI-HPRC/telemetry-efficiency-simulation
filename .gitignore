@@ -2,3 +2,7 @@
 *.o
 *.asv
 .vscode
+*.lock
+bazel-bin
+bazel-out
+bazel-telemetry-efficiency-simulation

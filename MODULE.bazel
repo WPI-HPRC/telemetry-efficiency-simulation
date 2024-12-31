@@ -1,0 +1,7 @@
+# MODULE.bazel
+
+# https://registry.bazel.build/modules/protobuf
+bazel_dep(name = "protobuf", version = "29.2")
+
+# https://registry.bazel.build/modules/abseil-cpp
+bazel_dep(name = "abseil-cpp", version = "20240116.1")

@@ -5,3 +5,7 @@ package telemetry;
 message Packet {
     repeated float dataset = 1;
 }
+
+message FullData {
+    repeated Packet packet = 1;
+}

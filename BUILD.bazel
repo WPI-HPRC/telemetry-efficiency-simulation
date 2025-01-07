@@ -20,3 +20,13 @@ cc_binary(
   ],
   srcs = ["Transmitter.cpp"],
 )
+
+cc_binary(
+  name = "Receiver",
+  deps = [
+    ":packet_cc_proto",
+    "@protobuf//:protobuf",
+    "@abseil-cpp//absl/strings"
+  ],
+  srcs = ["Receiver.cpp"],
+)

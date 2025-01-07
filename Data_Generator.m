@@ -1,13 +1,18 @@
 % Clear the workspace variables
 clearvars;
 clc;
+
 % OUR CONTROL VARIABLES:
 % Whether to plot one line or three
 multi_line = 1;
 % Whether the data should have any sort of waveforms in it or not
-noisy = 1;
+noisy = 0;
 % Whether to write the data or not
 write_data = 0;
+% Whether to read/graph received data or not
+receive_data = 1;
+
+
 % SETUP:
 % Number of iterations
 number_steps = 500;
@@ -16,30 +21,42 @@ line1_change = round(0.5*number_steps);
 line2_change = round(0.66*number_steps);
 global line3_change;
 line3_change = round(0.75*number_steps);
+
 % Number of lines
 num_lines = 1;
+
 % Plot three lines if we want multiple lines
 if multi_line
    num_lines = 3;
 end
+
 % Our value array
 values(number_steps,num_lines) = 0;
+received_Data(number_steps,num_lines*2) = 0;
+if receive_data 
+    received_Data = csvread('ReceivedData.csv');
+end
+
+
 % DATA GENERATION
 % Our starting positions:
 line2_start = 20;
 global line3_start;
 line3_start = 5;
+
 % Our functions:
 % Iterative proportional slope functions
 f_line1_1 = 30/line1_change;
 f_line2_1 = -50/line2_change;
 f_line2_2 = 25/(number_steps - line2_change);
 % f_line3_1 curve generator is complex and at the very bottom
+
 % Set initial values:
 if multi_line
    values(1,2) = 20;
    values (1,3) = line3_start;
 end
+
 for i = 2:1:number_steps
    % For line 1
    % If before the line changer value
@@ -49,21 +66,26 @@ for i = 2:1:number_steps
    else
        values(i,1) = values(i-1,1);
    end
+
    % If multiple lines
-   if multi_line
-       % For line 2
-       if (i < line2_change)
-           values(i,2) = values(i-1,2) + f_line2_1;
-       else
-           values(i,2) = values(i-1,2) + f_line2_2;
-       end
-       % For line 3
-       if (i < line3_change)
-           values(i,3) = f_line3_1(i);
-       else
-           values(i,3) = values(i-1,3);
-       end
+   if ~multi_line
+       % Skip next data
+       continue;
    end
+
+   % For line 2
+   if (i < line2_change)
+       values(i,2) = values(i-1,2) + f_line2_1;
+   else
+       values(i,2) = values(i-1,2) + f_line2_2;
+   end
+   % For line 3
+   if (i < line3_change)
+       values(i,3) = f_line3_1(i);
+   else
+       values(i,3) = values(i-1,3);
+   end
+
    % If noise on
    if noisy
        % For each line
@@ -73,10 +95,17 @@ for i = 2:1:number_steps
        end
    end
 end
+
+
 % DATA PLOTTING
 hold on
 plot(values);
+if receive_data
+    plot(received_Data);
+end
 hold off
+
+
 % DATA WRITING TO FILE
 if write_data
    % Our file name:
@@ -88,6 +117,8 @@ if write_data
    % Now write new file with none of the old/existing stuff in there.
    csvwrite(filename, values);
 end
+
+
 % OUR FUNCTIONS:
 % Function for generating the line 3 curve:
 function datapoint = f_line3_1(x)
@@ -101,6 +132,7 @@ function datapoint = f_line3_1(x)
    a = -(c-y_0)/(b^2);
    datapoint = a*(x - b)^2 + c;
 end
+
 % Function for generating the noise
 function noise_unit = noise_gen(x)
    noise_unit = sin(x);

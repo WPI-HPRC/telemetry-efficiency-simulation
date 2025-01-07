@@ -9,6 +9,10 @@ C:\msys64\ucrt64\bin\g++
 - make
 - protoc
 
+It also may be a good idea to go into environment variables to link necessary paths.
+
+For Bazel C++ compiler: https://stackoverflow.com/a/69962808 solution
+
 ### Visual Studio
 installed visual studio community edition
 use basel to build/run
@@ -27,8 +31,17 @@ latest version 20240722.0
 
 # Build
 ## Compile and Build
+#### Protobuf Files
+```
+bazel build packet_proto packet_cc_proto --verbose_failures
+```
+#### Transmitter
 ```
 bazel build Transmitter --verbose_failures
+```
+#### Receiver
+```
+bazel build Receiver --verbose_failures
 ```
 
 ## Clean Build
@@ -37,7 +50,11 @@ bazel clean
 ```
 
 # Run
-
+#### Transmitter
 ```
 .\bazel-bin\Transmitter.exe
+```
+#### Receiver
+```
+.\bazel-bin\Receiver.exe
 ```

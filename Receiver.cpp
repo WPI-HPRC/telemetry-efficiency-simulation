@@ -16,7 +16,6 @@ using namespace std;
 // const int num_vars = 3;
 
 int current_mode[3] = {DEFAULT, DEFAULT, DEFAULT};
-int global_current_mode = DERIVATIVE;
 
 float last_dataset[num_vars];
 float current_dataset[num_vars];
@@ -55,7 +54,11 @@ int main() {
 
     // Write data to CSV
     for (int j = 0; j < packet.dataset_size(); j++) {
-      const float data = packet.dataset(j);
+      // Retrieve raw data from the binary file
+      const int rawData = packet.dataset(j);
+      // Get the float-translated data
+      float data = float(rawData)*0.0001;
+      // Our actual final data
       float payload;
 
       // Decide which payload to send
@@ -67,7 +70,7 @@ int main() {
           case 2:
               // Derivative - send the slope of currentData - lastData
               payload = last_dataset[j] + data;
-              cout << "Last Dataset: " << last_dataset[j] << ", Data: " << data << ", Payload: " << payload << endl;
+              // cout << "Last Dataset: " << last_dataset[j] << ", Data: " << data << ", Payload: " << payload << endl;
               break;
           case 3:
               // Offset - send the data - offsetValue

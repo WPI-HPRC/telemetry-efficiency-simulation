@@ -98,12 +98,16 @@ end
 
 
 % DATA PLOTTING
+figure(1)
 hold on
 plot(values);
 if receive_data
     plot(received_Data);
 end
 hold off
+
+figure(2)
+plot(received_Data-values);
 
 
 % DATA WRITING TO FILE

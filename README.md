@@ -2,13 +2,13 @@
 ## Program Summary:
 Test new algorithms for shortening data for the telemetry system using a file to communicate between a transmitter and receiver program.
 
-A MATLAB program generates data, which can be one or three-channel, smooth or noisy, and then plots the data in a graph and exports it into a CSV file.
+A MATLAB program generates data, which can be one or three-channel, smooth or noisy, and then plots the data in a graph and exports it into the Generated_Data.csv file.
 
-Then the Transmitter C++ program takes the CSV data, processes/compresses(*) it, and writes it via protobuf into a binary file, representing the data sent through radio.
+Then the Transmitter C++ program takes the data from Generated_Data.csv, processes/compresses(*) it into ProcessedData.csv for reading, and writes it via protobuf into the Transmitted_Data.bin file, representing the data sent through radio.
 
-A Receiver C++ program then takes the binary file data, decodes the compression, and exports that to another CSV file.
+A Receiver C++ program then takes the binary file data from Transmitted_Data.bin, decodes the compression, and exports that to ReceivedData.csv.
 
-Finally, the MATLAB program can plot the final CSV data, seeing how it holds up when compared to the original CSV data.
+Finally, the MATLAB program can plot the final data from ReceivedData.csv, seeing how it holds up when compared to the original data in Generated_Data.csv.
 
 ## Processing and Compression Modes: (*)
 

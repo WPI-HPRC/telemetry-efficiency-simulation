@@ -14,21 +14,12 @@
 
 using namespace std;
 
-// const int num_vars = 3;
-
-// // Our different telemetry states
-// int DEFAULT = 1;
-// int DERIVATIVE = 2;
-// int OFFSET = 3;
-// int DERIVATIVE_OFFSET = 4;
-
 // Storing our different dataset states
 int current_mode[num_vars] = {DEFAULT, DEFAULT, DEFAULT};
-int global_current_mode = DERIVATIVE;
 
 // Data memory
-float last_dataset[num_vars]; // Set to all zeroes later on
-float current_dataset[num_vars];
+int last_dataset[num_vars]; // Set to all zeroes later on
+int current_dataset[num_vars];
 float offset = 0;
 
 // Initial variable setup if necessary
@@ -63,6 +54,7 @@ int main() {
     parse_CSV("Generated_Data.csv");
 
     // Close the file to free up resources.
+    cout << "Transmission File created successfully." << endl;
     transmitFile.close();
 
     return 0;
@@ -92,7 +84,7 @@ int createFile(char* file_name, ofstream* file) {
        // Return a non-zero value to indicate an error.
         return 1;
     }
-    cout << "Transmission File created successfully." << endl;
+    cout << "Creating Transmission File..." << endl;
     
     return 0;
 }
@@ -128,12 +120,14 @@ int parse_CSV(string file_name) {
             fields.push_back(field);
 
             // Collect data in float form
-            float data = stof(field);
+            float rawData = stof(field);
+            // Convert to int shifted five bits for data compression
+            int data = rawData*10000;
             // Add data to current dataset
             current_dataset[counter] = data;
 
             // Actual data to send
-            float payload;
+            int payload;
 
             // Decide which payload to send
             switch (global_current_mode) {

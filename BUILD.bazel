@@ -17,10 +17,17 @@ cc_library(
     visibility = ["//visibility:public"],  # Make the library accessible to other targets
 )
 
+cc_library(
+    name = "TX_headers",
+    hdrs = ["Transmitter.h"],
+    visibility = ["//visibility:public"],  # Make the library accessible to other targets
+)
+
 cc_binary(
-  name = "Transmitter",
+  name = "TX",
   deps = [
     ":common_vars",
+    #":TX_headers",
     ":packet_cc_proto",
     "@protobuf//:protobuf",
     "@abseil-cpp//absl/strings"
@@ -29,10 +36,9 @@ cc_binary(
 )
 
 cc_binary(
-  name = "Receiver",
+  name = "RX",
   deps = [
     ":common_vars",
-    ":Transmitter",
     ":packet_cc_proto",
     "@protobuf//:protobuf",
     "@abseil-cpp//absl/strings"
@@ -40,10 +46,25 @@ cc_binary(
   srcs = ["Receiver.cpp"],
 )
 
-#cc_binary(
-#  name = "all",
-#  deps = [
-#    "Transmitter",
-#    "Receiver"
-#  ],
-#)
+cc_binary(
+  name = "RandGen",
+  deps = [
+    ":common_vars",
+    ":packet_cc_proto",
+    "@protobuf//:protobuf",
+    "@abseil-cpp//absl/strings"
+  ],
+  srcs = ["RandomBinaryGenerator.cpp"],
+)
+
+cc_binary(
+  name = "all",
+  deps = [
+    ":common_vars",
+    "TX",
+    "RX",
+    ":packet_cc_proto",
+    "@protobuf//:protobuf",
+    "@abseil-cpp//absl/strings"
+  ],
+)

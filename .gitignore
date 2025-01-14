@@ -5,3 +5,4 @@
 *.lock
 bazel-*
 error
+RandGen

@@ -55,21 +55,21 @@ int main() {
     // Write data to CSV
     for (int j = 0; j < packet.dataset_size(); j++) {
       // Retrieve raw data from the binary file
-      const int rawData = packet.dataset(j);
+      const int payload = packet.dataset(j);
       // Get the float-translated data
-      float data = float(rawData)*0.0001;
+      float data = float(payload)/COMPRESSION_FACTOR;
       // Our actual final data
-      float payload;
+      float endValue;
 
       // Decide which payload to send
       switch (global_current_mode) {
           case 1:
               // Default - send the data as is
-              payload = data;
+              endValue = data;
               break;
           case 2:
               // Derivative - send the slope of currentData - lastData
-              payload = last_dataset[j] + data;
+              endValue = last_dataset[j] + data;
               // cout << "Last Dataset: " << last_dataset[j] << ", Data: " << data << ", Payload: " << payload << endl;
               break;
           case 3:
@@ -81,9 +81,9 @@ int main() {
       }
 
       // Set current data
-      current_dataset[j] = payload;
+      current_dataset[j] = endValue;
 
-      outfile << payload;
+      outfile << endValue;
 
       if (j != packet.dataset_size()-1) {
         outfile << ",";

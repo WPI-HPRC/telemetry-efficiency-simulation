@@ -7,6 +7,7 @@
 #include <vector>
 #include <stdio.h>
 #include <algorithm>
+// #include "Transmitter.h"
 #include "common_variables.h"
 #include "packet.pb.h"
 #include <cstdio>
@@ -30,6 +31,11 @@ int removeFile(char* file_name);
 int createFile(char* file_name, ofstream* file);
 // Takes the Generated_Data.csv file and parses the data to the protobuf file
 int parse_CSV(string file_name);
+// PARSE_CSV DEPENDENCIES:
+// Reads existing binary file data into current dataSet
+int readAllData(telemetry::FullData* data);
+// Appends new packet to existing binary file data
+int appendNewData(telemetry::FullData* data);
 // Append packet to end of data
 int append_data(telemetry::Packet* packet, telemetry::Packet desiredPacket);
 
@@ -95,34 +101,27 @@ int parse_CSV(string file_name) {
 
     ofstream outfile("ProcessedData.csv");
 
-    // For each line:
+    // FOR EACH LINE:
     while (getline(file, line)) {
-        istringstream iss(line);
+        istringstream dataString(line);
         vector<string> fields;
 
         telemetry::FullData dataSet;
         telemetry::Packet currentPacket;
 
         // Read the existing binary file data
-        fstream input("Transmitted_Data.bin", ios::in | ios::binary);
-        if (!input) {
-            cout << "Transmitted_Data.bin" << ": File not found.  Creating a new file." << endl;
-        } else if (!dataSet.ParseFromIstream(&input)) {
-            cerr << "Failed to parse address book." << endl;
-            return -1;
-        }
+        readAllData(&dataSet);
 
         int counter = 0;
-        // Parse each line field by field
-        while(iss.good()) {
-            string field;
-            getline(iss, field, ',');
-            fields.push_back(field);
 
-            // Collect data in float form
-            float rawData = stof(field);
-            // Convert to int shifted five bits for data compression
-            int data = rawData*10000;
+        // FOR EACH DATA:
+        while(dataString.good()) {
+            string rawData;
+            getline(dataString, rawData, ',');
+            fields.push_back(rawData);
+            // Convert string data to int shifted a few bits for data compression
+            int data = stof(rawData) * COMPRESSION_FACTOR;
+
             // Add data to current dataset
             current_dataset[counter] = data;
 
@@ -149,11 +148,13 @@ int parse_CSV(string file_name) {
 
             // Record the data to the CSV
             outfile << payload;
+            cout << counter;
             if (counter != num_vars-1) {
                 outfile << ",";
             } else {
                 outfile << endl;
             }
+
             // Append data to the protobuf
             currentPacket.add_dataset(payload);
 
@@ -163,19 +164,11 @@ int parse_CSV(string file_name) {
             counter++;
         }
 
-        // Display protobuf packet
-        // cout << currentPacket.DebugString() << endl;
-
         // Add new data to the binary file
-        // append_data(dataSet.add_packet(), currentPacket);
         dataSet.add_packet()->CopyFrom(currentPacket);
 
         // Write the existing + new data to the binary file
-        fstream output("Transmitted_Data.bin", ios::out | ios::trunc | ios::binary);
-        if (!dataSet.SerializeToOstream(&output)) {
-            cerr << "Failed to write address book." << endl;
-            return -1;
-        }
+        appendNewData(&dataSet);
     }
 
     outfile.close();
@@ -183,9 +176,26 @@ int parse_CSV(string file_name) {
     return 0;
 }
 
-int append_data(telemetry::Packet packet, telemetry::Packet desiredPacket) {
-    packet.CopyFrom(desiredPacket);
+int readAllData(telemetry::FullData* data) {
+    // Read the existing binary file data
+    fstream input("Transmitted_Data.bin", ios::in | ios::binary);
+
+    if (!input) {
+        cout << "Transmitted_Data.bin" << ": File not found.  Creating a new file." << endl;
+    } else if (!(*data).ParseFromIstream(&input)) {
+        cerr << "Failed to parse address book." << endl;
+        return -1;
+    }
 
     return 0;
+}
+
+int appendNewData(telemetry::FullData* data) {
+    // Write the existing + new data to the binary file
+    fstream output("Transmitted_Data.bin", ios::out | ios::trunc | ios::binary);
+    if (!(*data).SerializeToOstream(&output)) {
+        cerr << "Failed to write address book." << endl;
+        return -1;
+    }
 }
 

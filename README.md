@@ -69,11 +69,23 @@ latest version 20240722.0
 bazel build packet_proto packet_cc_proto --verbose_failures
 ```
 #### Transmitter
+Run this
 ```
+bazel build TX
+```
+Other options
+```
+bazel build --copt -g --strip=never TX
 bazel build Transmitter --verbose_failures
 ```
 #### Receiver
+Run this
 ```
+bazel build TR
+```
+Other options
+```
+bazel build --copt -g --strip=never TR
 bazel build Receiver --verbose_failures
 ```
 
@@ -86,8 +98,42 @@ bazel clean
 #### Transmitter
 ```
 .\bazel-bin\Transmitter.exe
+.\bazel-bin\TX.exe
 ```
 #### Receiver
 ```
 .\bazel-bin\Receiver.exe
+.\bazel-bin\TR.exe
+```
+
+# Debug
+To debug Bazel C++ build in Windows MSVC, use "cppvsdbg: C++ (Windows)" launch cinfiguration type as shown below:
+```
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Transmitter",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/bazel-bin/TX.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${fileDirname}",
+      "environment": [],
+      "console": "externalTerminal"
+    },
+    {
+      "name": "Debug Receiver",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/bazel-bin/TR.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${fileDirname}",
+      "environment": [],
+      "console": "externalTerminal"
+    },
+  ]
+}
 ```

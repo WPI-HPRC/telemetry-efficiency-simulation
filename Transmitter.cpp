@@ -23,6 +23,16 @@ int last_dataset[num_vars]; // Set to all zeroes later on
 int current_dataset[num_vars];
 float offset = 0;
 
+// FOR OFFSET MODE:
+const int num_iterations = 5; // Number of iterations to include in setting offset value
+int mean_mem[num_iterations + 2][num_vars] = {}; // Our memory data for past iterations, mean, and current offset for all data channels
+int meanSumIndex = num_iterations; // Index of our mean sum
+int curr_OffsetIndex = num_iterations + 1; // Index of our current offset value
+int threshold = 3; // if mean is 3 less/more than the current offset, we change current offset to mean
+int iter_counter = 0; // Counts which index of the array to mutate/draw from
+int additionalInfo[num_vars*2]; // Appends the new offset value to the end of the CSV line
+int additionalInfoUseIndex = 0; // The index of which to append the new offset value to
+
 // Initial variable setup if necessary
 void setup();
 // Removes file if the file already exists
@@ -101,6 +111,8 @@ int parse_CSV(string file_name) {
 
     ofstream outfile("ProcessedData.csv");
 
+    int lineNum = 1;
+
     // FOR EACH LINE:
     while (getline(file, line)) {
         istringstream dataString(line);
@@ -140,15 +152,51 @@ int parse_CSV(string file_name) {
                     break;
                 case 3:
                     // Offset - send the data - offsetValue
+                    // Data collection
+                    int oldVal;
+                    oldVal = mean_mem[iter_counter][counter]; // Get old value
+                    mean_mem[iter_counter][counter] = data; // Replace with new value
+                    // Mean Mutation
+                    int mean;
+                    mean_mem[meanSumIndex][counter] = mean_mem[meanSumIndex][counter] - oldVal + data; // Update our mean sum value
+                    mean = mean_mem[meanSumIndex][counter] / num_iterations; // Get our mean value
+
+                    if (counter == 2) {
+                        cout << lineNum << ": Data: " << data << " New mean calculated.";
+                    }
+
+                    // Determine whether to change our offset value or not  
+                    if (abs(mean - mean_mem[curr_OffsetIndex][counter]) > threshold) {
+                        mean_mem[curr_OffsetIndex][counter] = mean; // Change our offset value
+                        // Put the changed offset value into the CSV
+                        additionalInfo[additionalInfoUseIndex] = counter; // Which column has changed offset
+                        additionalInfo[additionalInfoUseIndex + 1] = mean_mem[curr_OffsetIndex][counter]; // Changed offset value
+                        additionalInfoUseIndex = additionalInfoUseIndex + 2; // Update our additional info use index
+
+                        if (counter == 2) {
+                            cout << "Offset value changed.";
+                        }
+                    }
+
+                    if (counter == 2) {
+                        cout << " Offset Value: " << mean_mem[curr_OffsetIndex][counter]<< endl;
+                    }
+
+                    // Subtract our current value by the offset
+                    payload = data - mean_mem[curr_OffsetIndex][counter];
+
+                    // Increment our iteration counter
+                    iter_counter = (iter_counter + 1) % num_iterations;
                     break;
                 case 4:
                     // Derivative Offset - Explanation TBD
+                    // Increment our iteration counter
+                    iter_counter = (iter_counter + 1) % num_iterations;
                     break;
             }
 
             // Record the data to the CSV
             outfile << payload;
-            cout << counter;
             if (counter != num_vars-1) {
                 outfile << ",";
             } else {
@@ -157,6 +205,17 @@ int parse_CSV(string file_name) {
 
             // Append data to the protobuf
             currentPacket.add_dataset(payload);
+
+            // FOR OFFSET MODES:
+            if (global_current_mode == OFFSET) {
+                 // If this is the last dataset AND we have updated offset info:
+                if ((counter == (num_vars - 1)) && (additionalInfoUseIndex != 0)) {
+                    // Add our offset info to the protobuf packet
+                    for (int i = 0; i < additionalInfoUseIndex; i++) {
+                        currentPacket.add_dataset(additionalInfo[i]);
+                    }
+                }
+            }
 
             // Current dataset is now last dataset
             memcpy(last_dataset, current_dataset, sizeof(current_dataset));
@@ -169,6 +228,16 @@ int parse_CSV(string file_name) {
 
         // Write the existing + new data to the binary file
         appendNewData(&dataSet);
+
+        // Terminal Progress Bar:
+        // For each 10% increase
+        // if ((lineNum % num_packets/10) == 0) {
+        //     int percentage = lineNum * 100 / num_packets;
+        //     cout << "Transmission File" << percentage << "% Completed." << endl;
+        // }
+
+        // Increment our line number
+        lineNum++;
     }
 
     outfile.close();

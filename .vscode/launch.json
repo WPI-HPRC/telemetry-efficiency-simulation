@@ -1,0 +1,143 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Transmitter",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bazel-bin/TX.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "console": "externalTerminal"
+        },
+        {
+            "name": "Debug Receiver",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bazel-bin/TR.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "console": "externalTerminal"
+        },
+        // {
+        //     "name": "(gdb) Launch",
+        //     "type": "cppdbg",
+        //     "request": "launch",
+        //     "program": "${workspaceFolder}/a",
+        //     "args": [],
+        //     "stopAtEntry": false,
+        //     "cwd": "${workspaceFolder}",
+        //     "environment": [],
+        //     "externalConsole": false,
+        //     "MIMode": "gdb",
+        //     "miDebuggerPath": "C:\\msys64\\ucrt64\\bin\\gdb.exe",
+        //     "setupCommands": [
+        //         {
+        //             "description": "Enable pretty-printing for gdb",
+        //             "text": "-enable-pretty-printing",
+        //             "ignoreFailures": true
+        //         },
+        //         {
+        //             "description": "Set Disassembly Flavor to Intel",
+        //             "text": "-gdb-set disassembly-flavor intel",
+        //             "ignoreFailures": true
+        //         }
+        //     ]
+        // },
+        // {
+        //     "type": "lldb",
+        //     "request": "launch",
+        //     "name": "Launch",
+        //     "program": "${workspaceFolder}/a.exe",
+        //     "args": [],
+        //     "cwd": "${workspaceFolder}"
+        // },
+
+        // {
+        //     "name": "Test Code Launch",
+        //     "type": "cppdbg",
+        //     "request": "launch",
+        //     "program": "${workspaceFolder}/a.exe",
+        //     "args": [],
+        //     "stopAtEntry": false,
+        //     "cwd": "${fileDirname}",
+        //     "environment": [],
+        //     "externalConsole": false,
+        //     "MIMode": "gdb",
+        //     "miDebuggerPath": "${workspaceFolder}/.vscode/launch.json",
+        //     "setupCommands": [
+        //         {
+        //             "description": "Enable pretty-printing for gdb",
+        //             "text": "-enable-pretty-printing",
+        //             "ignoreFailures": true
+        //         },
+        //         {
+        //             "description": "Set Disassembly Flavor to Intel",
+        //             "text": "-gdb-set disassembly-flavor intel",
+        //             "ignoreFailures": true
+        //         }
+        //     ]
+        // },
+        
+        // {
+        //     "type": "lldb",
+        //     "request": "launch",
+        //     "name": "CodeLLDB",
+        //     "program": "${workspaceFolder}/bazel-bin/TX.exe",
+        //     "args": [],
+        //     "cwd": "${workspaceFolder}"
+        // },
+        // {
+        //     "name": "Debug Bazel C++ TX",
+        //     "type": "cppdbg",
+        //     "request": "launch",
+        //     "program": "${workspaceFolder}/bazel-bin/TX.exe",
+        //     "args": [],
+        //     "stopAtEntry": false,
+        //     "cwd": "${workspaceFolder}",
+        //     "environment": [],
+        //     "externalConsole": false,
+        //     "MIMode": "gdb",
+        //     "miDebuggerPath": "C:\\msys64\\ucrt64\\bin\\gdb.exe",
+        //     "setupCommands": [
+        //         {
+        //             "description": "Enable pretty-printing for gdb",
+        //             "text": "-enable-pretty-printing",
+        //             "ignoreFailures": true
+        //         },
+        //         {
+        //             "description": "Set Disassembly Flavor to Intel",
+        //             "text": "-gdb-set disassembly-flavor intel",
+        //             "ignoreFailures": true
+        //         }
+        //     ]
+        // },
+        // {
+        //     "type": "cppdbg",
+        //     "request": "launch",
+        //     "name": "Debug Bazel C++",
+        //     "program": "gdb",
+        //     "args": ["${workspaceFolder}/bazel-bin/RX.exe"],
+        //     "stopAtEntry": false,
+        //     "cwd": "${workspaceFolder}",
+        //     "environment": [],
+        //     "externalConsole": false,
+        //     "MIMode": "gdb",
+        //     "miDebuggerPath": "C:\\msys64\\ucrt64\\bin\\gdb.exe",
+        //     "setupCommands": [
+        //         {
+        //             "description": "Enable pretty-printing for gdb",
+        //             "text": "-enable-pretty-printing",
+        //             "ignoreFailures": true
+        //         }
+        //     ]
+        // }
+    ]
+}

@@ -32,7 +32,7 @@ cc_binary(
     "@protobuf//:protobuf",
     "@abseil-cpp//absl/strings"
   ],
-  srcs = ["Transmitter.cpp"],
+  srcs = ["Transmitter2.cpp"],
 )
 
 cc_binary(

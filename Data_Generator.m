@@ -12,7 +12,7 @@ noisy = 0;
 % Whether to write the data or not
 write_data = 1;
 % Whether to read/graph received data or not
-receive_data = 0;
+receive_data = 1;
 
 
 % SETUP:

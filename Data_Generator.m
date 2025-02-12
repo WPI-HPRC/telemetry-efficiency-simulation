@@ -5,12 +5,14 @@ clc;
 % OUR CONTROL VARIABLES:
 % Whether to plot one line or three
 multi_line = 1;
+% Whether to include different frequency lines or not
+diff_freq = 1;
 % Whether the data should have any sort of waveforms in it or not
 noisy = 0;
 % Whether to write the data or not
-write_data = 0;
+write_data = 1;
 % Whether to read/graph received data or not
-receive_data = 1;
+receive_data = 0;
 
 
 % SETUP:
@@ -21,6 +23,9 @@ line1_change = round(0.5*number_steps);
 line2_change = round(0.66*number_steps);
 global line3_change;
 line3_change = round(0.75*number_steps);
+line4_change = round(0.6*number_steps/2);
+line5_change = round(0.4*number_steps/3);
+line6_change = round(0.55*number_steps);
 
 % Number of lines
 num_lines = 1;
@@ -28,6 +33,11 @@ num_lines = 1;
 % Plot three lines if we want multiple lines
 if multi_line
    num_lines = 3;
+end
+
+% Plot all six lines if we want variable frequency
+if diff_freq
+    num_lines = 6;
 end
 
 % Our value array
@@ -50,11 +60,21 @@ f_line1_1 = 30/line1_change;
 f_line2_1 = -50/line2_change;
 f_line2_2 = 25/(number_steps - line2_change);
 % f_line3_1 curve generator is complex and at the very bottom
+f_line4 = 40/line4_change;
+f_line5_1 = -30/line5_change;
+f_line5_2 = 50/line5_change;
+f_line6 = 45/line6_change;
 
 % Set initial values:
-if multi_line
+if multi_line || diff_freq
    values(1,2) = 20;
    values (1,3) = line3_start;
+end
+
+if diff_freq
+    values(1,4) = -30;
+    values(1,5) = 10;
+    values(1,6) = -35;
 end
 
 for i = 2:1:number_steps
@@ -67,8 +87,8 @@ for i = 2:1:number_steps
        values(i,1) = values(i-1,1);
    end
 
-   % If multiple lines
-   if ~multi_line
+   % If multiple lines or different frequencies
+   if ~multi_line || ~diff_freq
        % Skip next data
        continue;
    end
@@ -84,6 +104,35 @@ for i = 2:1:number_steps
        values(i,3) = f_line3_1(i);
    else
        values(i,3) = values(i-1,3);
+   end
+
+   % If we have different frequencies for our lines
+   if diff_freq
+       % For line 4
+       % Initializer for 2
+       if i == 2
+           values(i,4) = values(i-1,4) + f_line4/2;
+       end
+       % Remainder count and guard for number bound
+       if (rem(i,2) == 0) && (i > 2)
+           values(i,4) = values(i-2,4) + f_line4;
+       % if for elseif to prevent initialization override
+       elseif (i > 2)
+           values(i,4) = missing;
+       end
+       % For line 5
+       % Remainder count and guard for number bound
+       if (rem(i,3) == 1) && (i > 3)
+           if i < line5_change
+               values(i,5) = values(i-3,5) + f_line5_1;
+           else
+               values(i,5) = values(i-3,5) + f_line5_2;
+           end
+       else
+           values(i,5) = missing;
+       end
+       % For line 6
+       values(i,6) = values(i-1,6) + f_line6;
    end
 
    % If noise on
@@ -106,8 +155,10 @@ if receive_data
 end
 hold off
 
-figure(2)
-plot(received_Data-values);
+if receive_data
+    figure(2)
+    plot(received_Data-values);
+end
 
 
 % DATA WRITING TO FILE

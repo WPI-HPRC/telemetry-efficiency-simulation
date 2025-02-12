@@ -2,8 +2,20 @@ syntax = "proto3";
 
 package telemetry;
 
+message OffsetBy {
+    int32 channel = 1;
+    int32 offsetVal = 2;
+}
+
 message Packet {
-    repeated int32 dataset = 1;
+    // repeated int32 dataset = 1;
+    int32 data1 = 1;
+    int32 data2 = 2;
+    int32 data3 = 3;
+    int32 data4 = 4;
+    int32 data5 = 5;
+    int32 data6 = 6;
+    repeated OffsetBy offsets = 7;
 }
 
 message FullData {

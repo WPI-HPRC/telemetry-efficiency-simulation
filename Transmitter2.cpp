@@ -7,6 +7,7 @@
 #include <vector>
 #include <stdio.h>
 #include <algorithm>
+#include <windows.h>
 // #include "Transmitter.h"
 #include "common_variables.h"
 #include "packet.pb.h"
@@ -42,12 +43,16 @@ int createFile(char* file_name, ofstream* file);
 // Takes the Generated_Data.csv file and parses the data to the protobuf file
 int parse_CSV(string file_name);
 // PARSE_CSV DEPENDENCIES:
+// Handle offset modes
+void doOffset(int data, int counter, int* payload);
 // Reads existing binary file data into current dataSet
 int readAllData(telemetry::FullData* data);
 // Appends new packet to existing binary file data
 int appendNewData(telemetry::FullData* data);
 // Append packet to end of data
 int append_data(telemetry::Packet* packet, telemetry::Packet desiredPacket);
+// Communicate command to RX side
+int sendCommand(char* command);
 
 void setup() {
     // Fill last_dataset as all zeros
@@ -60,11 +65,14 @@ void setup() {
 int main() {
     setup();
     // Remove existing binary data
-    removeFile("Transmitted_Data.bin");
+    removeFile("Wire.bin");
 
     // Create binary file
     ofstream transmitFile;
-    createFile("Transmitted_Data.bin", &transmitFile);
+    createFile("Wire.bin", &transmitFile);
+
+    // Creates file to have TX/RX communication
+    sendCommand("Started");
 
     // Get CSV data into binary file
     parse_CSV("Generated_Data.csv");
@@ -91,7 +99,7 @@ int createFile(char* file_name, ofstream* file) {
     // ofstream transmitfile;
 
     // Opening file "Gfg.txt" in write mode.
-    (*file).open("Transmitted_Data.bin");
+    (*file).open(file_name);
 
     // Check if the file was successfully created.
     if (!(*file).is_open())
@@ -100,7 +108,7 @@ int createFile(char* file_name, ofstream* file) {
        // Return a non-zero value to indicate an error.
         return 1;
     }
-    cout << "Creating Transmission File..." << endl;
+    // cout << "Creating Transmission File..." << endl;
     
     return 0;
 }
@@ -109,7 +117,7 @@ int parse_CSV(string file_name) {
     ifstream file(file_name);
     string line;
 
-    ofstream outfile("ProcessedData.csv");
+    ofstream outfile("Wire.bin");
 
     int lineNum = 1;
 
@@ -122,7 +130,7 @@ int parse_CSV(string file_name) {
         telemetry::Packet currentPacket;
 
         // Read the existing binary file data
-        readAllData(&dataSet);
+        // readAllData(&dataSet);
 
         int counter = 0;
 
@@ -134,15 +142,15 @@ int parse_CSV(string file_name) {
 
             // DO NOT EXECUTE further code if the data is nan value
             if (isnan(stof(rawData))) {
-                    // Record the data to the CSV
-                outfile << "N/A";
-                if (counter != num_vars-1) {
-                    outfile << ",";
-                    // cout << counter << endl;
-                } else {
-                    outfile << endl;
-                    // cout << "END " << counter << endl;
-                }
+                // Record the data to the CSV
+                // outfile << "N/A";
+                // if (counter != num_vars-1) {
+                //     outfile << ",";
+                //     // cout << counter << endl;
+                // } else {
+                //     outfile << endl;
+                //     // cout << "END " << counter << endl;
+                // }
                 counter++;
                 continue;
             }
@@ -169,41 +177,7 @@ int parse_CSV(string file_name) {
                     break;
                 case 3:
                     // Offset - send the data - offsetValue
-                    // Data collection
-                    int oldVal;
-                    oldVal = mean_mem[iter_counter][counter]; // Get old value
-                    mean_mem[iter_counter][counter] = data; // Replace with new value
-                    // Mean Mutation
-                    int mean;
-                    mean_mem[meanSumIndex][counter] = mean_mem[meanSumIndex][counter] - oldVal + data; // Update our mean sum value
-                    mean = mean_mem[meanSumIndex][counter] / num_iterations; // Get our mean value
-
-                    if (counter == 2) {
-                        cout << lineNum << ": Data: " << data << " New mean calculated.";
-                    }
-
-                    // Determine whether to change our offset value or not  
-                    if (abs(mean - mean_mem[curr_OffsetIndex][counter]) > threshold) {
-                        mean_mem[curr_OffsetIndex][counter] = mean; // Change our offset value
-                        // Put the changed offset value into the CSV
-                        additionalInfo[additionalInfoUseIndex] = counter; // Which column has changed offset
-                        additionalInfo[additionalInfoUseIndex + 1] = mean_mem[curr_OffsetIndex][counter]; // Changed offset value
-                        additionalInfoUseIndex = additionalInfoUseIndex + 2; // Update our additional info use index
-
-                        if (counter == 2) {
-                            cout << "Offset value changed.";
-                        }
-                    }
-
-                    if (counter == 2) {
-                        cout << " Offset Value: " << mean_mem[curr_OffsetIndex][counter]<< endl;
-                    }
-
-                    // Subtract our current value by the offset
-                    payload = data - mean_mem[curr_OffsetIndex][counter];
-
-                    // Increment our iteration counter
-                    iter_counter = (iter_counter + 1) % num_iterations;
+                    doOffset(data, counter, &payload);
                     break;
                 case 4:
                     // Derivative Offset - Explanation TBD
@@ -213,14 +187,14 @@ int parse_CSV(string file_name) {
             }
 
             // Record the data to the CSV
-            outfile << payload;
-            if (counter != num_vars-1) {
-                outfile << ",";
-                // cout << counter << endl;
-            } else {
-                outfile << endl;
-                // cout << "END " << counter << endl;
-            }
+            // outfile << payload;
+            // if (counter != num_vars-1) {
+            //     outfile << ",";
+            //     // cout << counter << endl;
+            // } else {
+            //     outfile << endl;
+            //     // cout << "END " << counter << endl;
+            // }
 
             // Append data to the protobuf
             switch (counter) {
@@ -264,6 +238,9 @@ int parse_CSV(string file_name) {
         // Add new data to the binary file
         dataSet.add_packet()->CopyFrom(currentPacket);
 
+        // Delay for receiver catchup:
+        Sleep(5);
+
         // Write the existing + new data to the binary file
         appendNewData(&dataSet);
 
@@ -283,6 +260,45 @@ int parse_CSV(string file_name) {
     return 0;
 }
 
+// For Offset Mode since more code is neccesary to represent this
+void doOffset(int data, int counter, int* payload) {
+    // Data collection
+    int oldVal;
+    oldVal = mean_mem[iter_counter][counter]; // Get old value
+    mean_mem[iter_counter][counter] = data; // Replace with new value
+    // Mean Mutation
+    int mean;
+    mean_mem[meanSumIndex][counter] = mean_mem[meanSumIndex][counter] - oldVal + data; // Update our mean sum value
+    mean = mean_mem[meanSumIndex][counter] / num_iterations; // Get our mean value
+
+    // if (counter == num_vars-1) {
+    //     cout << lineNum << ": Data: " << data << " New mean calculated.";
+    // }
+
+    // Determine whether to change our offset value or not  
+    if (abs(mean - mean_mem[curr_OffsetIndex][counter]) > threshold) {
+        mean_mem[curr_OffsetIndex][counter] = mean; // Change our offset value
+        // Put the changed offset value into the CSV
+        additionalInfo[additionalInfoUseIndex] = counter; // Which column has changed offset
+        additionalInfo[additionalInfoUseIndex + 1] = mean_mem[curr_OffsetIndex][counter]; // Changed offset value
+        additionalInfoUseIndex = additionalInfoUseIndex + 2; // Update our additional info use index
+
+        if (counter == num_vars-1) {
+            cout << "Offset value changed.";
+        }
+    }
+
+    if (counter == num_vars-1) {
+        cout << " Offset Value: " << mean_mem[curr_OffsetIndex][counter]<< endl;
+    }
+
+    // Subtract our current value by the offset
+    *payload = data - mean_mem[curr_OffsetIndex][counter];
+
+    // Increment our iteration counter
+    iter_counter = (iter_counter + 1) % num_iterations;
+}
+
 int readAllData(telemetry::FullData* data) {
     // Read the existing binary file data
     fstream input("Transmitted_Data.bin", ios::in | ios::binary);
@@ -299,10 +315,26 @@ int readAllData(telemetry::FullData* data) {
 
 int appendNewData(telemetry::FullData* data) {
     // Write the existing + new data to the binary file
-    fstream output("Transmitted_Data.bin", ios::out | ios::trunc | ios::binary);
+    fstream output("Wire.bin", ios::out | ios::trunc | ios::binary);
+    // newDataAvailable = 1;
     if (!(*data).SerializeToOstream(&output)) {
         cerr << "Failed to write address book." << endl;
         return -1;
     }
+}
+
+int sendCommand(char* command) {
+    std::fstream commandFile("Command_File.txt", std::ios::in | std::ios::out);
+    if (!commandFile.is_open()) {
+        cerr << "Could not open file";
+        return -1; 
+    }
+
+    // Put command in
+    commandFile << command;
+    cout << "Transmission started." << endl;
+    commandFile.close();
+
+    return 0;
 }
 

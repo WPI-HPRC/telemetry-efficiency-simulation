@@ -47,6 +47,17 @@ cc_binary(
 )
 
 cc_binary(
+  name = "Recon",
+  deps = [
+    ":common_vars",
+    ":packet_cc_proto",
+    "@protobuf//:protobuf",
+    "@abseil-cpp//absl/strings"
+  ],
+  srcs = ["Reassembler.cpp"],
+)
+
+cc_binary(
   name = "RandGen",
   deps = [
     ":common_vars",

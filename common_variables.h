@@ -14,6 +14,12 @@ int DERIVATIVE = 2;
 int OFFSET = 3;
 int DERIVATIVE_OFFSET = 4;
 
-int global_current_mode = DERIVATIVE;
+int global_current_mode = DEFAULT;
+
+bool packetSim = 1;
+
+bool transmissionStart = 0;
+
+int dataNum = 1;
 
 #endif

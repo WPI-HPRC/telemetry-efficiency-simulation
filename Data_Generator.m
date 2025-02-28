@@ -8,7 +8,7 @@ multi_line = 1;
 % Whether to include different frequency lines or not
 diff_freq = 1;
 % Whether the data should have any sort of waveforms in it or not
-noisy = 0;
+noisy = 1;
 % Whether to write the data or not
 write_data = 1;
 % Whether to read/graph received data or not

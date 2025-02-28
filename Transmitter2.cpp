@@ -48,7 +48,7 @@ void doOffset(int data, int counter, int* payload);
 // Reads existing binary file data into current dataSet
 int readAllData(telemetry::FullData* data);
 // Appends new packet to existing binary file data
-int appendNewData(telemetry::FullData* data);
+int appendNewData(telemetry::Packet* packet);
 // Append packet to end of data
 int append_data(telemetry::Packet* packet, telemetry::Packet desiredPacket);
 // Communicate command to RX side
@@ -117,7 +117,7 @@ int parse_CSV(string file_name) {
     ifstream file(file_name);
     string line;
 
-    ofstream outfile("Wire.bin");
+    ofstream outfile("ProcessedData.csv");
 
     int lineNum = 1;
 
@@ -143,14 +143,14 @@ int parse_CSV(string file_name) {
             // DO NOT EXECUTE further code if the data is nan value
             if (isnan(stof(rawData))) {
                 // Record the data to the CSV
-                // outfile << "N/A";
-                // if (counter != num_vars-1) {
-                //     outfile << ",";
-                //     // cout << counter << endl;
-                // } else {
-                //     outfile << endl;
-                //     // cout << "END " << counter << endl;
-                // }
+                outfile << "N/A";
+                if (counter != num_vars-1) {
+                    outfile << ",";
+                    // cout << counter << endl;
+                } else {
+                    outfile << endl;
+                    // cout << "END " << counter << endl;
+                }
                 counter++;
                 continue;
             }
@@ -187,14 +187,14 @@ int parse_CSV(string file_name) {
             }
 
             // Record the data to the CSV
-            // outfile << payload;
-            // if (counter != num_vars-1) {
-            //     outfile << ",";
-            //     // cout << counter << endl;
-            // } else {
-            //     outfile << endl;
-            //     // cout << "END " << counter << endl;
-            // }
+            outfile << payload;
+            if (counter != num_vars-1) {
+                outfile << ",";
+                // cout << counter << endl;
+            } else {
+                outfile << endl;
+                // cout << "END " << counter << endl;
+            }
 
             // Append data to the protobuf
             switch (counter) {
@@ -235,14 +235,14 @@ int parse_CSV(string file_name) {
             counter++;
         }
 
-        // Add new data to the binary file
-        dataSet.add_packet()->CopyFrom(currentPacket);
+        // // Add new data to the binary file
+        // dataSet.add_packet()->CopyFrom(currentPacket);
+
+        // Transmit our current packet through the wire
+        appendNewData(&currentPacket);
 
         // Delay for receiver catchup:
         Sleep(5);
-
-        // Write the existing + new data to the binary file
-        appendNewData(&dataSet);
 
         // Terminal Progress Bar:
         // For each 10% increase
@@ -313,11 +313,11 @@ int readAllData(telemetry::FullData* data) {
     return 0;
 }
 
-int appendNewData(telemetry::FullData* data) {
+int appendNewData(telemetry::Packet* packet) {
     // Write the existing + new data to the binary file
     fstream output("Wire.bin", ios::out | ios::trunc | ios::binary);
     // newDataAvailable = 1;
-    if (!(*data).SerializeToOstream(&output)) {
+    if (!(*packet).SerializeToOstream(&output)) {
         cerr << "Failed to write address book." << endl;
         return -1;
     }
